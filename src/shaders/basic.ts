@@ -1,28 +1,24 @@
 // src/shaders/basic.ts
 
-// El Vertex Shader se ejecuta por cada vértice (esquina) de nuestra forma.
-// Su trabajo principal es calcular la posición final del vértice en la pantalla.
 export const basicVertexShader = `
-  // 'attribute' es un input que viene desde un buffer de datos.
-  // vec2 significa que es un vector de 2 componentes (x, y).
   attribute vec2 a_position;
+  attribute vec3 a_color; // NUEVO: Atributo para el color del vértice (R, G, B)
+
+  varying vec3 v_color; // NUEVO: "Varying" para pasar el color al fragment shader
 
   void main() {
-    // gl_Position es una variable especial que indica la posición final.
-    // Lo convertimos de 2D (x,y) a 4D (x,y,z,w) como requiere WebGL.
     gl_Position = vec4(a_position, 0.0, 1.0);
+    v_color = a_color; // Pasamos el color del atributo al varying
   }
 `;
 
-// El Fragment Shader se ejecuta por cada píxel dentro de nuestra forma.
-// Su trabajo es decidir el color de ese píxel.
 export const basicFragmentShader = `
-  // 'precision' define la precisión de los números de punto flotante.
   precision mediump float;
 
+  varying vec3 v_color; // NUEVO: Recibimos el color interpolado
+
   void main() {
-    // gl_FragColor es una variable especial que establece el color del píxel.
-    // Usamos un color naranja (R, G, B, A).
-    gl_FragColor = vec4(1.0, 0.5, 0.0, 1.0);
+    // Usamos el color del varying en lugar de un color fijo
+    gl_FragColor = vec4(v_color, 1.0);
   }
 `;

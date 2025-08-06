@@ -9,8 +9,16 @@ export class Geometry {
     public readonly vertexCount: number;
     private readonly gl: WebGLRenderingContext;
 
-    constructor(gl: WebGLRenderingContext, data: Float32Array) {
+    constructor(
+        gl: WebGLRenderingContext,
+        data: Float32Array,
+        vertexComponentCount: number
+    ) {
         this.gl = gl;
+
+        if (vertexComponentCount <= 0) {
+            throw new Error('vertexComponentCount debe ser mayor que 0.');
+        }
 
         const buffer = gl.createBuffer();
         if (!buffer) {
@@ -18,14 +26,12 @@ export class Geometry {
         }
         this.vertexBuffer = buffer;
 
-        // Vinculamos el buffer y le cargamos los datos
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
 
-        // Asumimos 2 componentes por vértice (x, y)
-        this.vertexCount = data.length / 2;
+        // Corregimos el cálculo usando el número de componentes proporcionado
+        this.vertexCount = data.length / vertexComponentCount;
 
-        // Desvinculamos el buffer para evitar modificaciones accidentales
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
     }
 }
