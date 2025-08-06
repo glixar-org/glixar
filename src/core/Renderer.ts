@@ -1,6 +1,7 @@
 // src/core/Renderer.ts
 import { Shader } from './Shader';
 import { Geometry } from './Geometry';
+import { Renderable } from './types';
 
 export class Renderer {
   public readonly gl: WebGLRenderingContext;
@@ -14,11 +15,12 @@ export class Renderer {
     }
     this.gl = gl;
     this.shaderCache = new Map();
-    this.geometryCache = new Map(); // Añadimos la nueva caché
+    this.geometryCache = new Map();
     this.resizeToDisplaySize();
   }
 
   public getOrCreateShader(name: string, vertexSrc: string, fragmentSrc: string): Shader {
+    // ... (sin cambios en este método)
     if (this.shaderCache.has(name)) {
       return this.shaderCache.get(name)!;
     }
@@ -28,13 +30,8 @@ export class Renderer {
     return shader;
   }
 
-  /**
-   * Obtiene una geometría de la caché o la crea si no existe.
-   * @param name Un nombre único para la geometría.
-   * @param data Los datos de los vértices para la geometría.
-   * @returns La instancia de la geometría.
-   */
   public getOrCreateGeometry(name: string, data: Float32Array): Geometry {
+    // ... (sin cambios en este método)
     if (this.geometryCache.has(name)) {
       return this.geometryCache.get(name)!;
     }
@@ -44,11 +41,22 @@ export class Renderer {
     return geometry;
   }
 
-  public draw(geometry: Geometry, shader: Shader): void {
-    const gl = this.gl;
+  /**
+   * Limpia el canvas al color especificado.
+   */
+  public clear(): void {
+    this.gl.clearColor(0.0, 0.13, 0.26, 1.0);
+    this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+  }
 
-    gl.clearColor(0.0, 0.13, 0.26, 1.0);
-    gl.clear(gl.COLOR_BUFFER_BIT);
+  /**
+   * Dibuja un único objeto Renderable en el canvas.
+   * NO limpia el canvas.
+   * @param renderable El objeto a dibujar.
+   */
+  public draw(renderable: Renderable): void {
+    const { geometry, shader } = renderable;
+    const gl = this.gl;
 
     shader.use();
     gl.bindBuffer(gl.ARRAY_BUFFER, geometry.vertexBuffer);
@@ -62,11 +70,10 @@ export class Renderer {
   }
 
   public resizeToDisplaySize(): void {
-    // ... (este método no cambia)
+    // ... (sin cambios en este método)
     const canvas = this.gl.canvas as HTMLCanvasElement;
     const displayWidth = canvas.clientWidth;
     const displayHeight = canvas.clientHeight;
-
     if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
       canvas.width = displayWidth;
       canvas.height = displayHeight;

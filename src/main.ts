@@ -1,5 +1,6 @@
 // src/main.ts
 import { Renderer } from './core/Renderer';
+import { Renderable } from './core/types';
 import { basicVertexShader, basicFragmentShader } from './shaders/basic';
 
 try {
@@ -7,25 +8,38 @@ try {
   const canvas = document.getElementById('glixar-canvas') as HTMLCanvasElement;
   const renderer = new Renderer(canvas);
 
-  // 2. Definición de Datos Crudos
-  // Estos son solo números en un array. No hay objetos de WebGL aquí.
-  const triangleVertices = new Float32Array([
-    0.0,  0.5, // Vértice superior
-    -0.5, -0.5, // Vértice inferior izquierdo
-    0.5, -0.5, // Vértice inferior derecho
+  // 2. Definición de Datos y Recursos
+  // Datos para nuestro primer triángulo (grande)
+  const mainTriangleVertices = new Float32Array([
+    0.0, 0.5, -0.5, -0.5, 0.5, -0.5,
+  ]);
+  // Datos para un segundo triángulo (pequeño, a la izquierda)
+  const smallTriangleVertices = new Float32Array([
+    -0.7, 0.8, -0.9, 0.5, -0.5, 0.5,
   ]);
 
-  // 3. Creación de Recursos a través del Renderer
-  // Le pedimos al renderer que cree/obtenga los objetos de la GPU.
-  const triangleGeometry = renderer.getOrCreateGeometry('triangle', triangleVertices);
+  // Obtenemos los recursos de la GPU a través del renderer
+  const mainTriangleGeom = renderer.getOrCreateGeometry('main_triangle', mainTriangleVertices);
+  const smallTriangleGeom = renderer.getOrCreateGeometry('small_triangle', smallTriangleVertices);
   const basicShader = renderer.getOrCreateShader('basic', basicVertexShader, basicFragmentShader);
 
-  // 4. Renderizado
-  // Le decimos al renderer qué objetos dibujar.
-  renderer.draw(triangleGeometry, basicShader);
+  // 3. Creación de la Escena
+  // Una escena es simplemente una lista de objetos renderizables.
+  const scene: Renderable[] = [
+    { geometry: mainTriangleGeom, shader: basicShader },
+    { geometry: smallTriangleGeom, shader: basicShader },
+  ];
 
-  console.log('Glixar Alpha: Geometría y shader obtenidos desde el gestor.');
+  // 4. El Bucle de Renderizado
+  // Limpiamos el lienzo UNA SOLA VEZ.
+  renderer.clear();
 
+  // Recorremos la escena y dibujamos cada objeto.
+  for (const renderable of scene) {
+    renderer.draw(renderable);
+  }
+
+  console.log('Glixar Alpha: Escena con múltiples objetos renderizada.');
 } catch (error) {
   console.error('No se pudo inicializar o renderizar con Glixar:', error);
 }
