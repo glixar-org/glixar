@@ -58,42 +58,26 @@ export class Renderer {
      * NO limpia el canvas.
      * @param renderable El objeto a dibujar.
      */
+
     public draw(renderable: Renderable): void {
-        const {geometry, shader} = renderable;
+        const {geometry, shader, modelMatrix} = renderable;
         const gl = this.gl;
 
         shader.use();
+
+        // NUEVO: Enviamos la matriz del objeto al shader
+        shader.setMatrix4fv('u_modelMatrix', modelMatrix);
+
         gl.bindBuffer(gl.ARRAY_BUFFER, geometry.vertexBuffer);
 
-        // --- NUEVA LÓGICA DE ATRIBUTOS ---
-        // Un vértice ahora contiene 5 números: X, Y, R, G, B (5 floats)
-        // Cada float ocupa 4 bytes.
-        const STRIDE = 5 * 4; // 20 bytes en total por vértice
-
-        // 1. Configurar el atributo de POSICIÓN (a_position)
+        const STRIDE = 5 * 4;
         const posAttribLocation = gl.getAttribLocation(shader.program, 'a_position');
-        gl.vertexAttribPointer(
-            posAttribLocation,
-            2,        // 2 componentes por posición (X, Y)
-            gl.FLOAT,
-            false,
-            STRIDE,   // Stride: 20 bytes para llegar a la siguiente posición
-            0         // Offset: La posición empieza en el byte 0 del vértice
-        );
+        gl.vertexAttribPointer(posAttribLocation, 2, gl.FLOAT, false, STRIDE, 0);
         gl.enableVertexAttribArray(posAttribLocation);
 
-        // 2. Configurar el atributo de COLOR (a_color)
         const colorAttribLocation = gl.getAttribLocation(shader.program, 'a_color');
-        gl.vertexAttribPointer(
-            colorAttribLocation,
-            3,        // 3 componentes por color (R, G, B)
-            gl.FLOAT,
-            false,
-            STRIDE,   // Stride: 20 bytes para llegar al siguiente color
-            2 * 4     // Offset: El color empieza después de 2 floats (en el byte 8)
-        );
+        gl.vertexAttribPointer(colorAttribLocation, 3, gl.FLOAT, false, STRIDE, 8);
         gl.enableVertexAttribArray(colorAttribLocation);
-        // --- FIN DE LA NUEVA LÓGICA ---
 
         gl.drawArrays(gl.TRIANGLES, 0, geometry.vertexCount);
         gl.bindBuffer(gl.ARRAY_BUFFER, null);

@@ -2,13 +2,17 @@
 
 export const basicVertexShader = `
   attribute vec2 a_position;
-  attribute vec3 a_color; // NUEVO: Atributo para el color del vértice (R, G, B)
+  attribute vec3 a_color;
+  
+  uniform mat4 u_modelMatrix; // NUEVO: El uniform para la matriz
 
-  varying vec3 v_color; // NUEVO: "Varying" para pasar el color al fragment shader
+  varying vec3 v_color;
 
   void main() {
-    gl_Position = vec4(a_position, 0.0, 1.0);
-    v_color = a_color; // Pasamos el color del atributo al varying
+    // Transformamos la posición del vértice multiplicándola por la matriz
+    // El orden es crucial: Matriz * Vector
+    gl_Position = u_modelMatrix * vec4(a_position, 0.0, 1.0);
+    v_color = a_color;
   }
 `;
 
