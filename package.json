@@ -6,6 +6,8 @@
   "type": "module",
   "scripts": {
     "build": "esbuild src/main.ts --bundle --outfile=dist/glixar.js --format=esm --sourcemap",
+    "build:wasm": "wasm-pack build ./wasm --target web --out-dir ../src/wasm-pkg",
+    "postbuild:wasm": "cpy src/wasm-pkg/glixar_wasm_bg.wasm demo --flat",
     "dev": "esbuild src/main.ts --bundle --outfile=demo/glixar.bundle.js --format=esm --sourcemap --servedir=demo --watch",
     "lint": "eslint \"src/**/*.ts\"",
     "format": "prettier --write \"src/**/*.ts\" \"demo/**/*.html\""
@@ -33,6 +35,7 @@
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.39.0",
     "@typescript-eslint/parser": "^8.39.0",
+    "cpy-cli": "^5.0.0",
     "esbuild": "^0.25.8",
     "eslint": "^9.32.0",
     "eslint-config-prettier": "^10.1.8",
