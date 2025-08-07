@@ -1,9 +1,11 @@
 // src/core/Renderer.ts
-import {Shader} from './Shader';
-import {Geometry} from './Geometry';
-import {Renderable} from './types';
+import { Shader } from './Shader';
+import { Geometry } from './Geometry';
+import { SceneObject } from '../objects/SceneObject';
+import { Camera2D } from './Camera2D'; // Importamos la cámara
 
 export class Renderer {
+    // ... (el constructor y los métodos getOrCreate... no cambian)
     public readonly gl: WebGLRenderingContext;
     private readonly shaderCache: Map<string, Shader>;
     private readonly geometryCache: Map<string, Geometry>;
@@ -20,53 +22,39 @@ export class Renderer {
     }
 
     public getOrCreateShader(name: string, vertexSrc: string, fragmentSrc: string): Shader {
-        // ... (sin cambios en este método)
         if (this.shaderCache.has(name)) {
             return this.shaderCache.get(name)!;
         }
         const shader = new Shader(this.gl, vertexSrc, fragmentSrc);
         this.shaderCache.set(name, shader);
-        console.log(`Shader "${name}" creado y cacheado.`);
         return shader;
     }
 
-    public getOrCreateGeometry(
-        name: string,
-        data: Float32Array,
-        vertexComponentCount: number
-    ): Geometry {
+    public getOrCreateGeometry(name: string, data: Float32Array, vertexComponentCount: number): Geometry {
         if (this.geometryCache.has(name)) {
             return this.geometryCache.get(name)!;
         }
-        // Pasamos el nuevo parámetro al constructor de Geometry
         const geometry = new Geometry(this.gl, data, vertexComponentCount);
         this.geometryCache.set(name, geometry);
-        console.log(`Geometría "${name}" creada y cacheada.`);
         return geometry;
     }
 
-    /**
-     * Limpia el canvas al color especificado.
-     */
     public clear(): void {
         this.gl.clearColor(0.0, 0.13, 0.26, 1.0);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT);
     }
 
-    /**
-     * Dibuja un único objeto Renderable en el canvas.
-     * NO limpia el canvas.
-     * @param renderable El objeto a dibujar.
-     */
-
-    public draw(renderable: Renderable): void {
-        const {geometry, shader, modelMatrix} = renderable;
+    // El método draw ahora también necesita la cámara
+    public draw(sceneObject: SceneObject, camera: Camera2D): void {
+        const { geometry, shader, modelMatrix } = sceneObject;
         const gl = this.gl;
 
         shader.use();
 
-        // NUEVO: Enviamos la matriz del objeto al shader
+        // Pasamos las TRES matrices al shader
         shader.setMatrix4fv('u_modelMatrix', modelMatrix);
+        shader.setMatrix4fv('u_viewMatrix', camera.viewMatrix);
+        shader.setMatrix4fv('u_projectionMatrix', camera.projectionMatrix);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, geometry.vertexBuffer);
 
@@ -84,14 +72,6 @@ export class Renderer {
     }
 
     public resizeToDisplaySize(): void {
-        // ... (sin cambios en este método)
-        const canvas = this.gl.canvas as HTMLCanvasElement;
-        const displayWidth = canvas.clientWidth;
-        const displayHeight = canvas.clientHeight;
-        if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
-            canvas.width = displayWidth;
-            canvas.height = displayHeight;
-            this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
-        }
+        // ... (sin cambios)
     }
 }

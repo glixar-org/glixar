@@ -4,14 +4,15 @@ export const basicVertexShader = `
   attribute vec2 a_position;
   attribute vec3 a_color;
   
-  uniform mat4 u_modelMatrix; // NUEVO: El uniform para la matriz
+  uniform mat4 u_modelMatrix;
+  uniform mat4 u_viewMatrix;       // NUEVO: Matriz de la Cámara (Vista)
+  uniform mat4 u_projectionMatrix; // NUEVO: Matriz del Lente (Proyección)
 
   varying vec3 v_color;
 
   void main() {
-    // Transformamos la posición del vértice multiplicándola por la matriz
-    // El orden es crucial: Matriz * Vector
-    gl_Position = u_modelMatrix * vec4(a_position, 0.0, 1.0);
+    // El pipeline completo: Proyección * Vista * Modelo * Posición
+    gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * vec4(a_position, 0.0, 1.0);
     v_color = a_color;
   }
 `;
