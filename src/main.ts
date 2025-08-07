@@ -1,12 +1,12 @@
 // src/main.ts
 import { Glixar } from './Glixar';
-import { SceneObject } from './objects/SceneObject'; // Importamos la nueva clase
+import { SceneObject } from './objects/SceneObject';
 import { basicVertexShader, basicFragmentShader } from './shaders/basic';
-import { mat4 } from 'gl-matrix';
+// Ya no necesitamos importar 'mat4' aquí. ¡La librería lo oculta!
 
 class ExampleApp {
   private glixar: Glixar;
-  private scene: SceneObject[] = []; // El array de la escena ahora contiene SceneObjects
+  private scene: SceneObject[] = [];
   private rotatingObject: SceneObject | null = null;
 
   constructor(canvasId: string) {
@@ -28,14 +28,12 @@ class ExampleApp {
     const smallTriangleGeom = this.glixar.createGeometry('small_triangle', smallTriangleData, 5);
     const basicShader = this.glixar.createShader('basic_color', basicVertexShader, basicFragmentShader);
 
-    // Creamos instancias de SceneObject
     const staticTriangle = new SceneObject(mainTriangleGeom, basicShader);
     this.rotatingObject = new SceneObject(smallTriangleGeom, basicShader);
 
-    // Aplicamos la transformación inicial al objeto que rotará
-    mat4.translate(this.rotatingObject.modelMatrix, this.rotatingObject.modelMatrix, [-0.6, 0.6, 0]);
+    // Usamos la nueva API para la transformación inicial. ¡Mucho más limpio!
+    this.rotatingObject.translate(-0.6, 0.6, 0);
 
-    // Añadimos los objetos a la escena
     this.scene.push(staticTriangle, this.rotatingObject);
   }
 
@@ -45,10 +43,11 @@ class ExampleApp {
 
   private update(time: number): void {
     if (this.rotatingObject) {
-      // Para una rotación continua, reseteamos la matriz a su posición y luego rotamos
-      mat4.identity(this.rotatingObject.modelMatrix);
-      mat4.translate(this.rotatingObject.modelMatrix, this.rotatingObject.modelMatrix, [-0.6, 0.6, 0]);
-      mat4.rotateZ(this.rotatingObject.modelMatrix, this.rotatingObject.modelMatrix, time * 0.001);
+      // La animación ahora es una elegante cadena de métodos.
+      this.rotatingObject
+          .setIdentity()
+          .translate(-0.6, 0.6, 0)
+          .rotateZ(time * 0.001);
     }
 
     this.glixar.render(this.scene);
@@ -60,7 +59,7 @@ class ExampleApp {
 try {
   const app = new ExampleApp('glixar-canvas');
   app.start();
-  console.log('Glixar Alpha: Escena compuesta con SceneObjects.');
+  console.log('Glixar Alpha: API de transformación fluida activada.');
 } catch (error) {
   console.error('No se pudo inicializar Glixar:', error);
 }
