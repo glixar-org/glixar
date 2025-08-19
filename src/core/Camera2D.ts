@@ -4,16 +4,24 @@ import { mat4, vec3 } from 'gl-matrix';
 export class Camera2D {
     public readonly projectionMatrix: mat4;
     public readonly viewMatrix: mat4;
-    private position: vec3 = [0, 0, 1]; // Posición de la cámara (mirando hacia Z=0)
+
+    // Usamos el tipo 'vec3' de gl-matrix para nuestras propiedades
+    private position: vec3;
+    private target: vec3;
+    private up: vec3;
+
     private zoomLevel: number = 1.0;
-    private dirty: boolean = true; // Flag para recalcular la matriz solo cuando sea necesario
+    private dirty: boolean = true;
 
     constructor(width: number, height: number) {
         this.projectionMatrix = mat4.create();
         this.viewMatrix = mat4.create();
 
-        // Creamos una proyección ortográfica. Esto es como un lente sin perspectiva.
-        // Mapea un área del mundo a la pantalla. Aquí, un área de 2x2 unidades.
+        // Inicializamos nuestros vectores con el tipo correcto
+        this.position = vec3.fromValues(0, 0, 1);
+        this.target = vec3.fromValues(0, 0, 0);
+        this.up = vec3.fromValues(0, 1, 0);
+
         mat4.ortho(this.projectionMatrix, -1, 1, -1, 1, -1, 1);
     }
 
@@ -22,10 +30,12 @@ export class Camera2D {
      */
     public update(): void {
         if (this.dirty) {
-            const target = [this.position[0], this.position[1], 0]; // Hacia dónde mira
-            const up = [0, 1, 0]; // El vector "arriba"
+            // Actualizamos el 'target' para que siempre mire al mismo plano X,Y que la cámara
+            this.target[0] = this.position[0];
+            this.target[1] = this.position[1];
 
-            mat4.lookAt(this.viewMatrix, this.position, target, up);
+            // Ahora todos los argumentos son del tipo 'vec3' correcto
+            mat4.lookAt(this.viewMatrix, this.position, this.target, this.up);
             mat4.scale(this.viewMatrix, this.viewMatrix, [this.zoomLevel, this.zoomLevel, 1]);
 
             this.dirty = false;
@@ -37,7 +47,7 @@ export class Camera2D {
      * @param level Un valor > 0. Valores más pequeños alejan la cámara (más zoom out).
      */
     public zoom(level: number): void {
-        this.zoomLevel = Math.max(0.01, level); // Evitar zoom cero o negativo
+        this.zoomLevel = Math.max(0.01, level);
         this.dirty = true;
     }
 }

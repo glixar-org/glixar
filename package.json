@@ -9,6 +9,8 @@
     "build:wasm": "wasm-pack build ./wasm --target web --out-dir ./src/wasm-pkg",
     "postbuild:wasm": "cpy src/wasm-pkg/glixar_wasm_bg.wasm demo --flat",
     "build:prod": "esbuild src/Glixar.ts --bundle --outfile=dist/glixar.min.js --minify --format=iife --global-name=Glixar",
+    "docs": "typedoc --entryPointStrategy expand ./src",
+    "docs:serve": "esbuild --servedir=docs",
     "dev": "esbuild src/main.ts --bundle --outfile=demo/glixar.bundle.js --format=esm --sourcemap --servedir=demo --watch",
     "lint": "eslint \"src/**/*.ts\"",
     "format": "prettier --write \"src/**/*.ts\" \"demo/**/*.html\""
@@ -43,6 +45,7 @@
     "eslint-plugin-prettier": "^5.5.3",
     "gl-matrix": "^3.4.3",
     "prettier": "^3.6.2",
+    "typedoc": "^0.28.10",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.39.0",
     "wasm-pack": "^0.13.1"

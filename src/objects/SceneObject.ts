@@ -3,18 +3,27 @@ import { Geometry } from '../core/Geometry';
 import { Shader } from '../core/Shader';
 import { mat4 } from 'gl-matrix';
 
+/**
+ * Representa un objeto renderizable en la escena.
+ * Encapsula una geometría, un shader y su propia matriz de transformación.
+ */
 export class SceneObject {
+    /** La forma del objeto. */
     public geometry: Geometry;
+    /** El material o apariencia del objeto. */
     public shader: Shader;
+    /** La matriz que define la posición, rotación y escala del objeto en el mundo. */
     public modelMatrix: mat4;
 
+    /**
+     * @param geometry La geometría del objeto.
+     * @param shader El shader que se usará para renderizar el objeto.
+     */
     constructor(geometry: Geometry, shader: Shader) {
         this.geometry = geometry;
         this.shader = shader;
         this.modelMatrix = mat4.create();
     }
-
-    // --- MÉTODOS DE TRANSFORMACIÓN (NUEVO) ---
 
     /**
      * Resetea la matriz de transformación a la matriz identidad.
