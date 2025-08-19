@@ -6,8 +6,9 @@
   "type": "module",
   "scripts": {
     "build": "esbuild src/main.ts --bundle --outfile=dist/glixar.js --format=esm --sourcemap",
-    "build:wasm": "wasm-pack build ./wasm --target web --out-dir ../src/wasm-pkg",
+    "build:wasm": "wasm-pack build ./wasm --target web --out-dir ./src/wasm-pkg",
     "postbuild:wasm": "cpy src/wasm-pkg/glixar_wasm_bg.wasm demo --flat",
+    "build:prod": "esbuild src/Glixar.ts --bundle --outfile=dist/glixar.min.js --minify --format=iife --global-name=Glixar",
     "dev": "esbuild src/main.ts --bundle --outfile=demo/glixar.bundle.js --format=esm --sourcemap --servedir=demo --watch",
     "lint": "eslint \"src/**/*.ts\"",
     "format": "prettier --write \"src/**/*.ts\" \"demo/**/*.html\""
