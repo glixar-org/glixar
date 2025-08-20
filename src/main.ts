@@ -1,70 +1,68 @@
 // src/main.ts
+import { Glixar } from './Glixar';
+import { SceneObject } from './objects/SceneObject';
+import { Camera2D } from './core/Camera2D';
+import { basicVertexShader, basicFragmentShader } from './shaders/basic';
 import Pbf from 'pbf';
 import { VectorTile } from '@mapbox/vector-tile';
+import { parsePointLayer } from './mvt/MvtParser';
 
-/**
- * Fabrica un buffer de una tesela vectorial mínima y válida.
- * Esta versión está corregida para usar la API de 'pbf' correctamente.
- */
 function createTestTileBuffer(): ArrayBuffer {
-  const pbfWriter = new Pbf(); // La tesela principal
-
-  // 1. Construir el mensaje de la Característica (Feature)
-  const featureWriter = new Pbf();
-  featureWriter.writeVarintField(3, 1); // type = 1 (Point)
-  featureWriter.writeBytesField(4, new Uint8Array([9, 50, 50])); // geometry: MoveTo(25,25)
-  const featureBuffer = featureWriter.finish();
-
-  // 2. Construir el mensaje de la Capa (Layer)
+  const pbfWriter = new Pbf();
   const layerWriter = new Pbf();
-  layerWriter.writeVarintField(15, 2); // version
-  layerWriter.writeStringField(1, "test_layer"); // name
-  // Añadimos el buffer del feature como un campo de bytes (tag = 2)
-  layerWriter.writeBytesField(2, featureBuffer);
-  const layerBuffer = layerWriter.finish();
-
-  // 3. Añadir el buffer de la capa a la tesela principal (tag = 3)
-  pbfWriter.writeBytesField(3, layerBuffer);
-
+  layerWriter.writeVarintField(15, 2);
+  layerWriter.writeStringField(1, "test_layer");
+  const featureWriter = new Pbf();
+  featureWriter.writeVarintField(3, 1);
+  // MoveTo(2048, 2048) -> El centro exacto de la tesela
+  featureWriter.writeBytesField(4, new Uint8Array([9, 4096, 4096]));
+  layerWriter.writeBytesField(2, featureWriter.finish());
+  pbfWriter.writeBytesField(3, layerWriter.finish());
   return pbfWriter.finish().buffer;
 }
 
-async function inspectVectorTile() {
-  try {
-    console.log('Iniciando misión de reconocimiento (Fabricación Interna Correcta)...');
+class MvtApp {
+  private glixar: Glixar;
+  private scene: SceneObject[] = [];
+  private camera: Camera2D;
 
-    // 1. Fabricamos nuestros datos binarios.
+  constructor(canvasId: string) {
+    this.glixar = new Glixar(canvasId);
+    this.camera = new Camera2D(this.glixar.canvas.width, this.glixar.canvas.height);
+    this.setupScene();
+  }
+
+  private setupScene(): void {
     const buffer = createTestTileBuffer();
-    console.log(`Tesela fabricada en memoria. ${buffer.byteLength} bytes.`);
-
-    // 2. Decodificamos
     const tile = new VectorTile(new Pbf(buffer));
+    const layer = tile.layers.test_layer;
+    const pointVertices = parsePointLayer(layer);
 
-    // 3. Interrogamos la tesela y mostramos su contenido
-    console.log('--- INFORME DE INTELIGENCIA ---');
-    console.log('Tesela decodificada con éxito.');
-    console.log('Capas encontradas:', Object.keys(tile.layers));
-
-    const layerName = "test_layer";
-    if (tile.layers[layerName]) {
-      const layer = tile.layers[layerName];
-      console.log(`\n--- Inspeccionando capa "${layerName}" (${layer.length} características) ---`);
-
-      if (layer.length > 0) {
-        const feature = layer.feature(0);
-        console.log('Primera característica:', {
-          type: feature.type,
-          properties: feature.properties,
-          geometry: feature.loadGeometry(),
-        });
-      }
+    if (pointVertices.length > 0) {
+      const pointsGeom = this.glixar.createGeometry('mvt_points', pointVertices, 5);
+      const shader = this.glixar.createShader('basic', basicVertexShader, basicFragmentShader);
+      const pointsObject = new SceneObject(pointsGeom, shader);
+      this.scene.push(pointsObject);
     }
+  }
 
-    console.log('\n--- FIN DEL INFORME ---');
+  public start(): void {
+    const animate = (time: number) => {
+      // Un zoom más intuitivo que oscila entre 0.5x y 1.5x
+      const zoom = 1.0 + Math.sin(time * 0.001) * 0.5;
+      this.camera.zoom(zoom);
 
-  } catch (error) {
-    console.error('La misión de reconocimiento ha fallado:', error);
+      this.glixar.render(this.scene, this.camera);
+      requestAnimationFrame(animate);
+    };
+    requestAnimationFrame(animate);
   }
 }
 
-inspectVectorTile();
+try {
+  const app = new MvtApp('glixar-canvas');
+  app.start();
+  console.log('Glixar Alpha: Renderizando geometría desde una Tesela Vectorial con cámara corregida.');
+} catch (error) {
+  console.error('No se pudo inicializar la app MVT de Glixar:', error);
+}
