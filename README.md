@@ -1,6 +1,6 @@
 # Glixar
 
-**A high-performance rendering library for the web, powered by WebGL and WebAssembly (Rust).**
+**A graphics engine for rendering thousands of animated objects on maps, at a speed traditional libraries cannot match.**
 
 ---
 
