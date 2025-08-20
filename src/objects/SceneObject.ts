@@ -4,20 +4,20 @@ import { Shader } from '../core/Shader';
 import { mat4 } from 'gl-matrix';
 
 /**
- * Representa un objeto renderizable en la escena.
- * Encapsula una geometría, un shader y su propia matriz de transformación.
+ * Represents a renderable object in the scene.
+ * It encapsulates a geometry, a shader, and its own transformation matrix.
  */
 export class SceneObject {
-    /** La forma del objeto. */
+    /** The shape of the object. */
     public geometry: Geometry;
-    /** El material o apariencia del objeto. */
+    /** The material or appearance of the object. */
     public shader: Shader;
-    /** La matriz que define la posición, rotación y escala del objeto en el mundo. */
+    /** The matrix defining the object's position, rotation, and scale in the world. */
     public modelMatrix: mat4;
 
     /**
-     * @param geometry La geometría del objeto.
-     * @param shader El shader que se usará para renderizar el objeto.
+     * @param geometry The object's geometry.
+     * @param shader The shader used to render the object.
      */
     constructor(geometry: Geometry, shader: Shader) {
         this.geometry = geometry;
@@ -26,8 +26,8 @@ export class SceneObject {
     }
 
     /**
-     * Resetea la matriz de transformación a la matriz identidad.
-     * @returns La instancia del objeto para encadenar métodos.
+     * Resets the transformation matrix to the identity matrix.
+     * @returns The object instance for method chaining.
      */
     public setIdentity(): this {
         mat4.identity(this.modelMatrix);
@@ -35,8 +35,8 @@ export class SceneObject {
     }
 
     /**
-     * Aplica una traslación a la matriz del objeto.
-     * @returns La instancia del objeto para encadenar métodos.
+     * Applies a translation to the object's matrix.
+     * @returns The object instance for method chaining.
      */
     public translate(x: number, y: number, z: number): this {
         mat4.translate(this.modelMatrix, this.modelMatrix, [x, y, z]);
@@ -44,9 +44,9 @@ export class SceneObject {
     }
 
     /**
-     * Aplica una rotación en el eje Z a la matriz del objeto.
-     * @param radians El ángulo de rotación en radianes.
-     * @returns La instancia del objeto para encadenar métodos.
+     * Applies a Z-axis rotation to the object's matrix.
+     * @param radians The rotation angle in radians.
+     * @returns The object instance for method chaining.
      */
     public rotateZ(radians: number): this {
         mat4.rotateZ(this.modelMatrix, this.modelMatrix, radians);
@@ -54,8 +54,8 @@ export class SceneObject {
     }
 
     /**
-     * Aplica una escala a la matriz del objeto.
-     * @returns La instancia del objeto para encadenar métodos.
+     * Applies a scale to the object's matrix.
+     * @returns The object instance for method chaining.
      */
     public scale(x: number, y: number, z: number): this {
         mat4.scale(this.modelMatrix, this.modelMatrix, [x, y, z]);

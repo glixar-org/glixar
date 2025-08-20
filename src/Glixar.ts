@@ -6,8 +6,8 @@ import { SceneObject } from './objects/SceneObject';
 import { Camera2D } from './core/Camera2D';
 
 /**
- * La clase principal de Glixar. Este es el punto de entrada para toda la librería.
- * Orquesta el renderer y proporciona una API pública para interactuar con el motor.
+ * The main Glixar class. This is the entry point for the entire library.
+ * It orchestrates the internal renderer and provides a public API for engine interaction.
  * @example
  * const glixar = new Glixar('my-canvas-id');
  */
@@ -16,46 +16,45 @@ export class Glixar {
     public readonly canvas: HTMLCanvasElement;
 
     /**
-     * Crea una nueva instancia del motor Glixar.
-     * @param canvasId El ID del elemento `<canvas>` en el DOM sobre el que se renderizará.
+     * Creates a new instance of the Glixar engine.
+     * @param canvasId The ID of the HTML `<canvas>` element to render upon.
      */
     constructor(canvasId: string) {
         const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
         if (!canvas) {
-            throw new Error(`No se encontró el canvas con id "${canvasId}"`);
+            throw new Error(`Canvas element with id "${canvasId}" not found`);
         }
         this.canvas = canvas;
         this.renderer = new Renderer(canvas);
     }
 
     /**
-     * Obtiene o crea una geometría a partir de un array de datos de vértices.
-     * La geometría se guarda en una caché interna para su reutilización.
-     * @param name Un nombre único para identificar esta geometría.
-     * @param data Un Float32Array con los datos de los vértices intercalados.
-     * @param componentCount El número de componentes por vértice (ej: 5 para X, Y, R, G, B).
-     * @returns Una instancia de Geometry.
+     * Gets or creates a cached Geometry instance from a vertex data array.
+     * @param name A unique name to identify this geometry.
+     * @param data A Float32Array of interleaved vertex data.
+     * @param componentCount The number of components per vertex (e.g., 5 for X, Y, R, G, B).
+     * @returns A Geometry instance.
      */
     public createGeometry(name: string, data: Float32Array, componentCount: number): Geometry {
         return this.renderer.getOrCreateGeometry(name, data, componentCount);
     }
 
     /**
-     * Obtiene o crea un programa de shaders a partir del código fuente.
-     * Los shaders se compilan y se guardan en una caché interna para su reutilización.
-     * @param name Un nombre único para identificar este shader.
-     * @param vertexSrc El código fuente del Vertex Shader.
-     * @param fragmentSrc El código fuente del Fragment Shader.
-     * @returns Una instancia de Shader.
+     * Gets or creates a cached Shader program from source code.
+     * Shaders are compiled and linked only once and then reused.
+     * @param name A unique name to identify this shader.
+     * @param vertexSrc The source code for the Vertex Shader.
+     * @param fragmentSrc The source code for the Fragment Shader.
+     * @returns A Shader instance.
      */
     public createShader(name: string, vertexSrc: string, fragmentSrc: string): Shader {
         return this.renderer.getOrCreateShader(name, vertexSrc, fragmentSrc);
     }
 
     /**
-     * Renderiza una escena completa usando una cámara específica.
-     * @param scene Un array de objetos {@link SceneObject} para dibujar.
-     * @param camera La {@link Camera2D} que define el punto de vista.
+     * Renders a complete scene using a specific camera.
+     * @param scene An array of {@link SceneObject} instances to draw.
+     * @param camera The {@link Camera2D} defining the viewpoint.
      */
     public render(scene: SceneObject[], camera: Camera2D): void {
         camera.update();
