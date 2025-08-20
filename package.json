@@ -1,19 +1,22 @@
 {
   "name": "@glixar/core",
   "version": "0.0.1-alpha",
+  "homepage": "https://glixar-org.github.io/glixar",
   "description": "High-performance WebGL/WebAssembly library for vector rendering.",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
-    "build": "esbuild src/main.ts --bundle --outfile=dist/glixar.js --format=esm --sourcemap",
+    "clean": "rimraf docs public",
     "build:wasm": "wasm-pack build ./wasm --target web --out-dir ./src/wasm-pkg",
-    "postbuild:wasm": "cpy src/wasm-pkg/glixar_wasm_bg.wasm demo --flat",
     "build:prod": "esbuild src/Glixar.ts --bundle --outfile=dist/glixar.min.js --minify --format=iife --global-name=Glixar",
-    "docs": "typedoc --entryPointStrategy expand ./src",
-    "docs:serve": "esbuild --servedir=docs",
-    "dev": "esbuild src/main.ts --bundle --outfile=demo/glixar.bundle.js --format=esm --sourcemap --servedir=demo --watch",
+    "docs": "typedoc --out public/docs --entryPointStrategy expand ./src",
+    "docs:serve": "esbuild --servedir=public/docs",
+    "dev": "npm run postbuild:wasm && esbuild src/main.ts --bundle --outfile=demo/glixar.bundle.js --format=esm --sourcemap --servedir=demo --watch",
+    "postbuild:wasm": "cpy src/wasm-pkg/glixar_wasm_bg.wasm demo --flat",
     "lint": "eslint \"src/**/*.ts\"",
-    "format": "prettier --write \"src/**/*.ts\" \"demo/**/*.html\""
+    "format": "prettier --write \"src/**/*.ts\" \"demo/**/*.html\"",
+    "predeploy": "npm run clean && npm run docs && npm run build:wasm && esbuild src/main.ts --bundle --outfile=public/glixar.bundle.js --format=esm && cpy src/wasm-pkg/glixar_wasm_bg.wasm public --flat && cpy demo/index.html public --flat",
+    "deploy": "gh-pages -d public -m 'Deploy: demo and docs [skip ci]'"
   },
   "repository": {
     "type": "git",
@@ -34,7 +37,6 @@
   "bugs": {
     "url": "https://github.com/glixar-org/glixar/issues"
   },
-  "homepage": "https://github.com/glixar-org/glixar#readme",
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.39.0",
     "@typescript-eslint/parser": "^8.39.0",
@@ -43,8 +45,10 @@
     "eslint": "^9.32.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.3",
+    "gh-pages": "^6.3.0",
     "gl-matrix": "^3.4.3",
     "prettier": "^3.6.2",
+    "rimraf": "^6.0.1",
     "typedoc": "^0.28.10",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.39.0",

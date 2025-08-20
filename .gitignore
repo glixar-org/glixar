@@ -163,3 +163,6 @@ Thumbs.db
 
 # Documentation
 /docs
+
+# Publish directory
+/public
