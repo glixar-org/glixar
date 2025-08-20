@@ -1,65 +1,70 @@
 // src/main.ts
-import { Glixar } from './Glixar';
-import { SceneObject } from './objects/SceneObject';
-import { Camera2D } from './core/Camera2D';
-import { basicVertexShader, basicFragmentShader } from './shaders/basic';
-import init, { generate_hexagon } from './wasm-pkg';
+import Pbf from 'pbf';
+import { VectorTile } from '@mapbox/vector-tile';
 
-class CameraApp {
-  private glixar: Glixar;
-  private scene: SceneObject[] = [];
-  private camera: Camera2D;
-  private rotatingObject: SceneObject | null = null;
+/**
+ * Fabrica un buffer de una tesela vectorial mínima y válida.
+ * Esta versión está corregida para usar la API de 'pbf' correctamente.
+ */
+function createTestTileBuffer(): ArrayBuffer {
+  const pbfWriter = new Pbf(); // La tesela principal
 
-  private constructor(glixar: Glixar) {
-    this.glixar = glixar;
-    // Creamos una cámara pasándole las dimensiones del canvas
-    this.camera = new Camera2D(glixar.canvas.width, glixar.canvas.height);
-    this.setupScene();
-  }
+  // 1. Construir el mensaje de la Característica (Feature)
+  const featureWriter = new Pbf();
+  featureWriter.writeVarintField(3, 1); // type = 1 (Point)
+  featureWriter.writeBytesField(4, new Uint8Array([9, 50, 50])); // geometry: MoveTo(25,25)
+  const featureBuffer = featureWriter.finish();
 
-  public static async create(canvasId: string): Promise<CameraApp> {
-    await init();
-    const glixar = new Glixar(canvasId);
-    return new CameraApp(glixar);
-  }
+  // 2. Construir el mensaje de la Capa (Layer)
+  const layerWriter = new Pbf();
+  layerWriter.writeVarintField(15, 2); // version
+  layerWriter.writeStringField(1, "test_layer"); // name
+  // Añadimos el buffer del feature como un campo de bytes (tag = 2)
+  layerWriter.writeBytesField(2, featureBuffer);
+  const layerBuffer = layerWriter.finish();
 
-  private setupScene(): void {
-    const hexagonData = generate_hexagon(0.7);
-    const hexagonGeom = this.glixar.createGeometry('wasm_hexagon', hexagonData, 5);
-    const basicShader = this.glixar.createShader('basic_color', basicVertexShader, basicFragmentShader);
-    this.rotatingObject = new SceneObject(hexagonGeom, basicShader);
-    this.scene.push(this.rotatingObject);
-  }
+  // 3. Añadir el buffer de la capa a la tesela principal (tag = 3)
+  pbfWriter.writeBytesField(3, layerBuffer);
 
-  public start(): void {
-    requestAnimationFrame(this.update.bind(this));
-  }
+  return pbfWriter.finish().buffer;
+}
 
-  private update(time: number): void {
-    if (this.rotatingObject) {
-      this.rotatingObject.setIdentity().rotateZ(time * 0.0005);
+async function inspectVectorTile() {
+  try {
+    console.log('Iniciando misión de reconocimiento (Fabricación Interna Correcta)...');
+
+    // 1. Fabricamos nuestros datos binarios.
+    const buffer = createTestTileBuffer();
+    console.log(`Tesela fabricada en memoria. ${buffer.byteLength} bytes.`);
+
+    // 2. Decodificamos
+    const tile = new VectorTile(new Pbf(buffer));
+
+    // 3. Interrogamos la tesela y mostramos su contenido
+    console.log('--- INFORME DE INTELIGENCIA ---');
+    console.log('Tesela decodificada con éxito.');
+    console.log('Capas encontradas:', Object.keys(tile.layers));
+
+    const layerName = "test_layer";
+    if (tile.layers[layerName]) {
+      const layer = tile.layers[layerName];
+      console.log(`\n--- Inspeccionando capa "${layerName}" (${layer.length} características) ---`);
+
+      if (layer.length > 0) {
+        const feature = layer.feature(0);
+        console.log('Primera característica:', {
+          type: feature.type,
+          properties: feature.properties,
+          geometry: feature.loadGeometry(),
+        });
+      }
     }
 
-    // Animamos la cámara con un efecto de zoom pulsante
-    const zoom = 1.5 + Math.sin(time * 0.001) * 0.5;
-    this.camera.zoom(zoom);
+    console.log('\n--- FIN DEL INFORME ---');
 
-    // Pasamos la escena y la cámara al método render
-    this.glixar.render(this.scene, this.camera);
-
-    requestAnimationFrame(this.update.bind(this));
-  }
-}
-
-async function main() {
-  try {
-    const app = await CameraApp.create('glixar-canvas');
-    app.start();
-    console.log('Glixar Alpha: Cámara 2D activa.');
   } catch (error) {
-    console.error('No se pudo inicializar Glixar:', error);
+    console.error('La misión de reconocimiento ha fallado:', error);
   }
 }
 
-main();
+inspectVectorTile();
