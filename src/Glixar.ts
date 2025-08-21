@@ -33,10 +33,11 @@ export class Glixar {
      * @param name A unique name to identify this geometry.
      * @param data A Float32Array of interleaved vertex data.
      * @param componentCount The number of components per vertex (e.g., 5 for X, Y, R, G, B).
+     * @param indices An optional Uint16Array of indices for indexed drawing.
      * @returns A Geometry instance.
      */
-    public createGeometry(name: string, data: Float32Array, componentCount: number): Geometry {
-        return this.renderer.getOrCreateGeometry(name, data, componentCount);
+    public createGeometry(name: string, data: Float32Array, componentCount: number, indices?: Uint16Array): Geometry {
+        return this.renderer.getOrCreateGeometry(name, data, componentCount, indices);
     }
 
     /**
