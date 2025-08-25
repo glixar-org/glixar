@@ -143,6 +143,8 @@ vite.config.ts.timestamp-*
 
 # Wasm-pack output package
 /src/wasm-pkg/
+# Wasm-pack default output
+/wasm/pkg
 
 # TypeScript build artifacts
 /dist/
