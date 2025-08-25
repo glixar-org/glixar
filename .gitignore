@@ -146,6 +146,10 @@ vite.config.ts.timestamp-*
 # Wasm-pack default output
 /wasm/pkg
 
+# Rust & Wasm build artifacts
+/glixar-wasm/target/
+/glixar-wasm/pkg/
+
 # TypeScript build artifacts
 /dist/
 
